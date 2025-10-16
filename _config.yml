@@ -1,20 +1,20 @@
-title: "Hải Vũ – Architect & Developer"
-tagline: "Building modular systems that make sense."
-description: "Personal site and portfolio of Trần Việt Hải Vũ"
+title: "Việt Hải – Developer"
+tagline: "Fast, clear, and minimal."
+description: "Personal site of Việt Hải – Developer & System Thinker"
 url: "https://haivtv.com"
 baseurl: ""
 
 theme: jekyll-theme-chirpy
 
 author:
-  name: "Trần Việt Hải Vũ"
+  name: "Việt Hải"
   avatar: "/assets/img/avatar.jpg"
-  bio: "Architect Guide · Developer · System Thinker"
+  bio: "Developer · System Thinker · Curious Mind"
   location: "Vietnam"
   links:
     - label: "Facebook"
       icon: "fab fa-facebook"
-      url: "https://facebook.com/yourpage"
+      url: "https://fb.com/haivtv"
     - label: "GitHub"
       icon: "fab fa-github"
       url: "https://github.com/vtvh"
@@ -28,4 +28,5 @@ markdown: kramdown
 paginate: 5
 paginate_path: "/page:num/"
 timezone: Asia/Ho_Chi_Minh
-lang: en
+lang: vi
+
