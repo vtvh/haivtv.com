@@ -4,6 +4,8 @@ description: "Trang cá nhân của Việt Hải — 👨‍💻 Lập trình vi
 url: "https://haivtv.com"
 baseurl: ""
 
+image: "/assets/img/share.jpg"
+
 theme: jekyll-theme-chirpy
 
 author:
