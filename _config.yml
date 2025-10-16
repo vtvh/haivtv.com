@@ -32,3 +32,9 @@ paginate_path: "/page:num/"
 timezone: Asia/Ho_Chi_Minh
 lang: vi
 
+exclude:
+  - .github/
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+
