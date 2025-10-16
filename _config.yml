@@ -1,0 +1,31 @@
+title: "Hải Vũ – Architect & Developer"
+tagline: "Building modular systems that make sense."
+description: "Personal site and portfolio of Trần Việt Hải Vũ"
+url: "https://haivtv.com"
+baseurl: ""
+
+theme: jekyll-theme-chirpy
+
+author:
+  name: "Trần Việt Hải Vũ"
+  avatar: "/assets/img/avatar.jpg"
+  bio: "Architect Guide · Developer · System Thinker"
+  location: "Vietnam"
+  links:
+    - label: "Facebook"
+      icon: "fab fa-facebook"
+      url: "https://facebook.com/yourpage"
+    - label: "GitHub"
+      icon: "fab fa-github"
+      url: "https://github.com/vtvh"
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+markdown: kramdown
+paginate: 5
+paginate_path: "/page:num/"
+timezone: Asia/Ho_Chi_Minh
+lang: en
