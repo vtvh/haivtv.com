@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0f">
+<title>Bowliards — Score Calculator</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="description" content="Bowliards score calculator — bowling scoring for pocket billiards. Track frames, strikes, spares. Installable PWA.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c27;
+    --border: #2a2a3a;
+    --accent: #c8f04a;
+    --accent-dim: #8aaa2a;
+    --strike: #f0c040;
+    --spare: #60c8f0;
+    --open: #f06060;
+    --text: #f0f0f0;
+    --text-muted: #7070a0;
+    --frame-active: #1e2530;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    overscroll-behavior: none;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 10px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .logo span { color: var(--text-muted); font-size: 12px; letter-spacing: 1px; display: block; font-family: 'DM Mono', monospace; margin-top: 2px; }
+
+  .header-btns { display: flex; gap: 8px; }
+
+  .icon-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 17px;
+    transition: background 0.15s, transform 0.1s;
+    user-select: none;
+  }
+  .icon-btn:active { transform: scale(0.92); background: var(--border); }
+
+  /* ── MAIN ── */
+  main { padding: 16px 14px 120px; max-width: 480px; margin: 0 auto; }
+
+  /* ── SCORE SUMMARY ── */
+  .score-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .score-main {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .score-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+
+  .score-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px;
+    line-height: 1;
+    color: var(--accent);
+    transition: color 0.3s;
+  }
+
+  .score-meta {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .meta-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .meta-chip b { color: var(--text); }
+
+  /* ── FRAME GRID ── */
+  .frames-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -14px;
+    padding: 0 14px;
+  }
+
+  .frames-grid {
+    display: flex;
+    gap: 5px;
+    min-width: max-content;
+  }
+
+  .frame {
+    width: 52px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .frame.active {
+    border-color: var(--accent);
+    background: var(--frame-active);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+
+  .frame.done { border-color: #2a2a3a; }
+
+  .frame-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 5px 2px 2px;
+    letter-spacing: 0.5px;
+  }
+
+  .frame-balls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 4px;
+    min-height: 28px;
+  }
+
+  .ball {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 5px;
+  }
+
+  .ball.strike { color: var(--strike); }
+  .ball.spare  { color: var(--spare); }
+  .ball.miss   { color: var(--text-muted); }
+  .ball.num    { color: var(--text); }
+
+  /* 10th frame: 3 balls */
+  .frame.frame-10 { width: 68px; }
+
+  .frame-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    text-align: center;
+    padding: 2px 2px 6px;
+    color: var(--text);
+    border-top: 1px solid var(--border);
+    min-height: 26px;
+  }
+
+  /* ── INPUT PANEL ── */
+  .input-panel {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 12px 14px 24px;
+    z-index: 100;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .input-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .ball-btns {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 7px;
+  }
+
+  .ball-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    padding: 10px 4px;
+    cursor: pointer;
+    transition: background 0.12s, transform 0.1s, border-color 0.12s;
+    user-select: none;
+    text-align: center;
+  }
+
+  .ball-btn:active { transform: scale(0.91); }
+  .ball-btn.strike-btn { color: var(--strike); border-color: var(--strike); background: rgba(240,192,64,0.08); }
+  .ball-btn.spare-btn  { color: var(--spare);  border-color: var(--spare);  background: rgba(96,200,240,0.08); }
+  .ball-btn.disabled   { opacity: 0.25; pointer-events: none; }
+
+  .ball-btn:not(.disabled):hover { background: var(--border); }
+
+  /* ── NEW GAME BTN ── */
+  .new-game-bar {
+    margin-top: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .new-game-btn {
+    flex: 1;
+    background: var(--accent);
+    color: #0a0a0f;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 1px;
+    padding: 14px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .new-game-btn:active { transform: scale(0.97); opacity: 0.85; }
+
+  /* ── HISTORY PANEL ── */
+  .panel-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    backdrop-filter: blur(4px);
+  }
+
+  .panel-overlay.open { display: flex; align-items: flex-end; }
+
+  .panel {
+    background: var(--surface);
+    border-radius: 20px 20px 0 0;
+    border-top: 1px solid var(--border);
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 20px 18px 40px;
+    animation: slideUp 0.25s ease;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 1px;
+    color: var(--accent);
+  }
+
+  .close-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .history-empty {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 40px 0;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .history-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .history-item:active { border-color: var(--accent); }
+
+  .history-left { display: flex; flex-direction: column; gap: 4px; }
+  .history-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  .history-frames { font-size: 13px; color: var(--text-muted); }
+
+  .history-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .history-score.perfect { color: var(--strike); }
+
+  .delete-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 16px;
+    padding: 6px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: color 0.15s;
+    margin-left: 8px;
+  }
+
+  .delete-btn:active { color: var(--open); }
+
+  /* ── ABOUT PANEL ── */
+  .about-content { color: var(--text-muted); font-size: 14px; line-height: 1.7; }
+  .about-content h3 { color: var(--accent); font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; margin: 16px 0 6px; }
+  .about-content .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    margin: 4px 4px 4px 0;
+  }
+  .chip.s { color: var(--strike); border-color: var(--strike); }
+  .chip.sp { color: var(--spare); border-color: var(--spare); }
+  .chip.o { color: var(--open); border-color: var(--open); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    top: 80px; left: 50%; transform: translateX(-50%) translateY(-10px);
+    background: var(--accent);
+    color: #0a0a0f;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+    z-index: 500;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.strike-toast { background: var(--strike); }
+  .toast.spare-toast  { background: var(--spare); }
+
+  /* ── GAME COMPLETE ── */
+  .game-over {
+    text-align: center;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .game-over.visible { display: block; }
+  .game-over-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; color: var(--accent); }
+  .game-over-score { font-family: 'Bebas Neue', sans-serif; font-size: 80px; color: var(--accent); line-height: 1; }
+  .game-over-score.perfect { color: var(--strike); }
+  .game-over-msg { color: var(--text-muted); font-size: 14px; margin-top: 6px; }
+
+  /* ── UNDO BTN ── */
+  .undo-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .undo-btn:active { background: var(--border); color: var(--text); }
+
+  .controls-row {
+    display: flex; gap: 8px; align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .frame-indicator {
+    flex: 1;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  /* scrollbar hide */
+  .frames-wrap::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    🎱 Bowliards
+    <span>Score Calculator</span>
+  </div>
+  <div class="header-btns">
+    <button class="icon-btn" id="shareBtn" title="Share score">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2"/>
+        <polyline points="16 6 12 2 8 6"/>
+        <line x1="12" y1="2" x2="12" y2="15"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="historyBtn" title="History">📋</button>
+    <button class="icon-btn" id="aboutBtn" title="How to score">❓</button>
+  </div>
+</header>
+
+<main>
+  <div class="score-summary">
+    <div class="score-main">
+      <div class="score-label">Total Score</div>
+      <div class="score-value" id="totalScore">0</div>
+    </div>
+    <div class="score-meta">
+      <div class="meta-chip">Frame <b id="frameDisplay">1</b>/10</div>
+      <div class="meta-chip">Max <b id="maxScore">300</b></div>
+    </div>
+  </div>
+
+  <div class="game-over" id="gameOver">
+    <div class="game-over-title">Game Complete</div>
+    <div class="game-over-score" id="finalScore">0</div>
+    <div class="game-over-msg" id="finalMsg">—</div>
+  </div>
+
+  <div class="frames-wrap">
+    <div class="frames-grid" id="framesGrid"></div>
+  </div>
+</main>
+
+<div class="input-panel" id="inputPanel">
+  <div class="controls-row">
+    <div class="frame-indicator" id="inputLabel">Frame 1 · 1st ball</div>
+    <button class="undo-btn" id="undoBtn">↩ Undo</button>
+  </div>
+  <div class="ball-btns" id="ballBtns"></div>
+  <div class="new-game-bar">
+    <button class="new-game-btn" id="newGameBtn">+ New Game</button>
+  </div>
+</div>
+
+<!-- Share Panel -->
+<div class="panel-overlay" id="shareOverlay">
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">↑ Share Score</div>
+      <button class="close-btn" id="closeShare">✕</button>
+    </div>
+    <div id="shareCard" style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin-bottom:12px;">🎱 BOWLIARDS</div>
+      <div id="shareScore" style="font-family:'Bebas Neue',sans-serif;font-size:80px;color:var(--accent);line-height:1;margin-bottom:4px;">0</div>
+      <div id="shareFrames" style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted);letter-spacing:1px;margin-bottom:14px;"></div>
+      <div id="shareGrid" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px;"></div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);">haivtv.com/bowliards</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="new-game-btn" id="copyShareBtn" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:16px;">📋 Copy Text</button>
+      <button class="new-game-btn" id="nativeShareBtn" style="font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-2"/>
+          <polyline points="16 6 12 2 8 6"/>
+          <line x1="12" y1="2" x2="12" y2="15"/>
+        </svg>
+        Share
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- History Panel -->
+<div class="panel-overlay" id="historyOverlay">
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">📋 History</div>
+      <button class="close-btn" id="closeHistory">✕</button>
+    </div>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<!-- About Panel -->
+<div class="panel-overlay" id="aboutOverlay">
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">❓ How to Score</div>
+      <button class="close-btn" id="closeAbout">✕</button>
+    </div>
+    <div class="about-content">
+      <p>Bowliards applies <strong>bowling scoring rules</strong> to pocket billiards. 10 frames, max 300 points.</p>
+
+      <h3>Each Frame</h3>
+      <p>Rack 10 balls in a triangle. You get <strong>2 innings</strong> (chances) to pocket all 10.</p>
+      <div>
+        <span class="chip s">⚡ Strike — run all 10 on 1st inning</span>
+        <span class="chip sp">/ Spare — clear all 10 across 2 innings</span>
+        <span class="chip o">– Open — didn't clear all 10</span>
+      </div>
+
+      <h3>Scoring</h3>
+      <p>Same as bowling:</p>
+      <p>• <b>Strike</b> = 10 + next 2 balls<br>
+      • <b>Spare</b> = 10 + next 1 ball<br>
+      • <b>Open</b> = ball1 + ball2 only</p>
+
+      <h3>10th Frame</h3>
+      <p>Strike = 2 bonus innings. Spare = 1 bonus inning. Max 3 balls.</p>
+
+      <h3>Input Guide</h3>
+      <p>Tap the number of balls you pocketed each inning. The app handles strikes (X) and spares (/) automatically.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  BOWLING SCORE ENGINE
+// ═══════════════════════════════════════════════
+
+const STORAGE_KEY = 'bowliards_current';
+const HISTORY_KEY = 'bowliards_history';
+
+// A game is stored as: rolls[] — an array of integers (balls pocketed each roll)
+// Frame structure is computed from rolls[]
+// Frames 1-9: up to 2 rolls. Frame 10: up to 3 rolls.
+
+let rolls = [];   // current game rolls
+let sessions = [];
+
+function loadState() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (s) rolls = JSON.parse(s);
+  } catch(e) { rolls = []; }
+  try {
+    const h = localStorage.getItem(HISTORY_KEY);
+    if (h) sessions = JSON.parse(h);
+  } catch(e) { sessions = []; }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(rolls));
+}
+
+function saveHistory(finalRolls, score) {
+  const session = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    rolls: [...finalRolls],
+    score
+  };
+  sessions.unshift(session);
+  if (sessions.length > 50) sessions = sessions.slice(0, 50);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(sessions));
+}
+
+// ── Parse rolls into frames ──
+function parseFrames(rolls) {
+  const frames = [];
+  let ri = 0;
+
+  for (let f = 0; f < 10; f++) {
+    if (ri >= rolls.length) {
+      frames.push({ balls: [], complete: false });
+      continue;
+    }
+    if (f < 9) {
+      const b1 = rolls[ri];
+      if (b1 === 10) {
+        frames.push({ balls: [b1], complete: true, strike: true });
+        ri++;
+      } else if (ri + 1 < rolls.length) {
+        const b2 = rolls[ri + 1];
+        frames.push({ balls: [b1, b2], complete: true, spare: b1 + b2 === 10 });
+        ri += 2;
+      } else {
+        // b2 not yet entered
+        frames.push({ balls: [b1], complete: false });
+        ri++;
+      }
+    } else {
+      // Frame 10
+      const b1 = rolls[ri];
+      if (b1 === undefined) { frames.push({ balls: [], complete: false }); continue; }
+      const b2 = rolls[ri + 1];
+      const b3 = rolls[ri + 2];
+
+      let balls = [b1];
+      let complete = false;
+
+      if (b2 !== undefined) {
+        balls.push(b2);
+        // Need 3rd ball if strike or spare
+        const needThird = b1 === 10 || (b1 + b2 === 10);
+        if (needThird) {
+          if (b3 !== undefined) { balls.push(b3); complete = true; }
+        } else {
+          complete = true;
+        }
+      }
+      frames.push({ balls, complete, isTenth: true,
+        strike: b1 === 10, spare: b1 !== 10 && b2 !== undefined && b1 + b2 === 10 });
+      ri += balls.length;
+    }
+  }
+  return frames;
+}
+
+// ── Compute cumulative scores ──
+function computeScores(rolls) {
+  const scores = [];
+  let ri = 0;
+  let total = 0;
+
+  for (let f = 0; f < 10; f++) {
+    if (ri >= rolls.length) { scores.push(null); continue; }
+
+    if (f < 9) {
+      const b1 = rolls[ri];
+      if (b1 === 10) {
+        // Strike
+        if (ri + 2 < rolls.length) {
+          total += 10 + rolls[ri+1] + rolls[ri+2];
+          scores.push(total);
+        } else {
+          scores.push(null); // pending bonus
+        }
+        ri++;
+      } else {
+        const b2 = rolls[ri + 1];
+        if (b2 === undefined) { scores.push(null); ri++; continue; }
+        if (b1 + b2 === 10) {
+          // Spare
+          if (ri + 2 < rolls.length) {
+            total += 10 + rolls[ri+2];
+            scores.push(total);
+          } else {
+            scores.push(null);
+          }
+        } else {
+          total += b1 + b2;
+          scores.push(total);
+        }
+        ri += 2;
+      }
+    } else {
+      // Frame 10: sum 2 or 3 balls
+      const b1 = rolls[ri];
+      const b2 = rolls[ri+1];
+      const b3 = rolls[ri+2];
+      const needThird = (b1 !== undefined && b2 !== undefined) && (b1 === 10 || b1 + b2 === 10);
+
+      if (b1 === undefined || b2 === undefined) { scores.push(null); break; }
+      if (needThird && b3 === undefined) { scores.push(null); break; }
+
+      total += b1 + (b2 || 0) + (b3 || 0);
+      scores.push(total);
+    }
+  }
+  return scores;
+}
+
+// ── Max possible score from current state ──
+function computeMax(rolls) {
+  // Simulate all remaining rolls as 10 (strikes)
+  const sim = [...rolls];
+  // Determine how many more rolls are needed for a 300
+  // Keep adding 10s until we have enough for all frames
+  for (let i = 0; i < 30; i++) sim.push(10);
+  const frames = parseFrames(sim);
+  const scores = computeScores(sim.slice(0, getCompleteRollCount(sim)));
+  // Simpler: just simulate with all 10s appended
+  const sc = computeScores(sim);
+  return sc[9] !== null ? sc[9] : 300;
+}
+
+function getCompleteRollCount(rolls) { return rolls.length; }
+
+// ── Which frame & ball are we on? ──
+function getPosition(rolls) {
+  const frames = parseFrames(rolls);
+  for (let f = 0; f < 10; f++) {
+    if (!frames[f].complete) {
+      const ballIdx = frames[f].balls.length; // 0 or 1 (or 2 in frame 10)
+      return { frame: f, ballIdx, done: false };
+    }
+  }
+  return { frame: 9, ballIdx: 0, done: true };
+}
+
+// ── Valid next balls ──
+function getValidBalls(rolls) {
+  const { frame, ballIdx, done } = getPosition(rolls);
+  if (done) return [];
+
+  const frames = parseFrames(rolls);
+  const fr = frames[frame];
+
+  if (frame < 9) {
+    if (ballIdx === 0) {
+      return Array.from({ length: 11 }, (_, i) => i); // 0-10
+    } else {
+      const b1 = fr.balls[0];
+      const max = 10 - b1;
+      return Array.from({ length: max + 1 }, (_, i) => i); // 0..(10-b1)
+    }
+  } else {
+    // Frame 10 — complex
+    if (ballIdx === 0) {
+      return Array.from({ length: 11 }, (_, i) => i);
+    } else if (ballIdx === 1) {
+      const b1 = fr.balls[0];
+      if (b1 === 10) {
+        // After strike, full rack again
+        return Array.from({ length: 11 }, (_, i) => i);
+      } else {
+        return Array.from({ length: 10 - b1 + 1 }, (_, i) => i);
+      }
+    } else {
+      // ballIdx === 2
+      const b1 = fr.balls[0], b2 = fr.balls[1];
+      if (b1 === 10 && b2 === 10) return Array.from({ length: 11 }, (_, i) => i);
+      if (b1 === 10) return Array.from({ length: 10 - b2 + 1 }, (_, i) => i);
+      // spare case (b1+b2=10)
+      return Array.from({ length: 11 }, (_, i) => i);
+    }
+  }
+}
+
+function isGameDone(rolls) {
+  return getPosition(rolls).done;
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════
+
+function ballLabel(value, prev, isTenth, ballIdx, prevB1, prevB2) {
+  if (value === 10) return { label: 'X', cls: 'strike' };
+  if (!isTenth && ballIdx === 1 && prev !== undefined && prev + value === 10) return { label: '/', cls: 'spare' };
+  if (isTenth) {
+    if (ballIdx === 1 && prevB1 !== 10 && prevB1 + value === 10) return { label: '/', cls: 'spare' };
+    if (ballIdx === 2) {
+      if (prevB1 === 10 && prevB2 === 10) {
+        // third after two strikes
+        if (value === 10) return { label: 'X', cls: 'strike' };
+      } else if (prevB1 === 10 && prevB2 + value === 10) {
+        return { label: '/', cls: 'spare' };
+      } else if (prevB1 + prevB2 === 10 && value === 10) {
+        return { label: 'X', cls: 'strike' };
+      }
+    }
+  }
+  if (value === 0) return { label: '—', cls: 'miss' };
+  return { label: String(value), cls: 'num' };
+}
+
+function render() {
+  const frames = parseFrames(rolls);
+  const scores = computeScores(rolls);
+  const { frame: activeFrame, ballIdx, done } = getPosition(rolls);
+  const totalScore = scores.filter(s => s !== null).slice(-1)[0] || 0;
+
+  // Score summary
+  document.getElementById('totalScore').textContent = totalScore;
+  document.getElementById('frameDisplay').textContent = done ? 10 : activeFrame + 1;
+
+  // Max possible
+  if (!done) {
+    const sim = [...rolls, ...Array(30).fill(10)];
+    const simScores = computeScores(sim);
+    const max = simScores[9] ?? 300;
+    document.getElementById('maxScore').textContent = Math.min(max, 300);
+  } else {
+    document.getElementById('maxScore').textContent = totalScore;
+  }
+
+  // Frame grid
+  const grid = document.getElementById('framesGrid');
+  grid.innerHTML = '';
+
+  for (let f = 0; f < 10; f++) {
+    const fr = frames[f];
+    const el = document.createElement('div');
+    el.className = 'frame' + (f === 9 ? ' frame-10' : '');
+    if (f === activeFrame && !done) el.classList.add('active');
+    else if (fr.complete) el.classList.add('done');
+    el.dataset.frame = f;
+
+    // Frame number
+    const numEl = document.createElement('div');
+    numEl.className = 'frame-num';
+    numEl.textContent = f + 1;
+    el.appendChild(numEl);
+
+    // Balls
+    const ballsEl = document.createElement('div');
+    ballsEl.className = 'frame-balls';
+
+    if (f < 9) {
+      if (fr.strike) {
+        const b = document.createElement('div');
+        b.className = 'ball strike'; b.textContent = 'X';
+        ballsEl.appendChild(b);
+      } else {
+        fr.balls.forEach((v, i) => {
+          const { label, cls } = ballLabel(v, fr.balls[i-1], false, i);
+          const b = document.createElement('div');
+          b.className = 'ball ' + cls; b.textContent = label;
+          ballsEl.appendChild(b);
+        });
+        if (!fr.complete && fr.balls.length === 1) {
+          const b = document.createElement('div');
+          b.className = 'ball'; b.textContent = '·';
+          b.style.color = 'var(--border)';
+          ballsEl.appendChild(b);
+        }
+      }
+    } else {
+      // 10th frame
+      fr.balls.forEach((v, i) => {
+        const { label, cls } = ballLabel(v, fr.balls[i-1], true, i, fr.balls[0], fr.balls[1]);
+        const b = document.createElement('div');
+        b.className = 'ball ' + cls; b.textContent = label;
+        ballsEl.appendChild(b);
+      });
+    }
+
+    el.appendChild(ballsEl);
+
+    // Score
+    const scoreEl = document.createElement('div');
+    scoreEl.className = 'frame-score';
+    scoreEl.textContent = scores[f] !== null ? scores[f] : '';
+    el.appendChild(scoreEl);
+
+    grid.appendChild(el);
+  }
+
+  // Scroll active frame into view
+  setTimeout(() => {
+    const active = grid.querySelector('.frame.active');
+    if (active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }, 50);
+
+  // Game over
+  const gameOver = document.getElementById('gameOver');
+  const finalScore = document.getElementById('finalScore');
+  const finalMsg = document.getElementById('finalMsg');
+
+  if (done) {
+    gameOver.classList.add('visible');
+    finalScore.textContent = totalScore;
+    if (totalScore === 300) {
+      finalScore.className = 'game-over-score perfect';
+      finalMsg.textContent = '🎱 PERFECT GAME! Legendary!';
+    } else if (totalScore >= 270) {
+      finalScore.className = 'game-over-score';
+      finalMsg.textContent = '🔥 Incredible game!';
+    } else if (totalScore >= 200) {
+      finalScore.className = 'game-over-score';
+      finalMsg.textContent = '💪 Great game!';
+    } else if (totalScore >= 150) {
+      finalScore.className = 'game-over-score';
+      finalMsg.textContent = '👏 Solid game!';
+    } else {
+      finalScore.className = 'game-over-score';
+      finalMsg.textContent = 'Keep practicing!';
+    }
+  } else {
+    gameOver.classList.remove('visible');
+  }
+
+  // Input panel
+  renderInput();
+}
+
+function renderInput() {
+  const { frame, ballIdx, done } = getPosition(rolls);
+  const panel = document.getElementById('inputPanel');
+  const label = document.getElementById('inputLabel');
+  const btns = document.getElementById('ballBtns');
+
+  if (done) {
+    label.textContent = 'Game complete!';
+    btns.innerHTML = '';
+    return;
+  }
+
+  const inningLabel = ['1st', '2nd', '3rd'];
+  label.textContent = `Frame ${frame + 1} · ${inningLabel[ballIdx] || ''} inning`;
+
+  const valid = getValidBalls(rolls);
+  btns.innerHTML = '';
+
+  // Show 0-10 buttons
+  for (let v = 0; v <= 10; v++) {
+    const btn = document.createElement('button');
+    btn.className = 'ball-btn';
+    if (!valid.includes(v)) btn.classList.add('disabled');
+
+    if (v === 10) {
+      btn.textContent = 'X';
+      btn.classList.add('strike-btn');
+    } else {
+      btn.textContent = v;
+    }
+
+    // Check if spare
+    const frames = parseFrames(rolls);
+    const fr = frames[frame];
+    if (frame < 9 && ballIdx === 1 && fr.balls[0] + v === 10) {
+      btn.classList.remove('strike-btn');
+      btn.classList.add('spare-btn');
+    }
+
+    btn.dataset.val = v;
+    btns.appendChild(btn);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  EVENTS
+// ═══════════════════════════════════════════════
+
+document.getElementById('ballBtns').addEventListener('click', e => {
+  const btn = e.target.closest('.ball-btn');
+  if (!btn || btn.classList.contains('disabled')) return;
+  const val = parseInt(btn.dataset.val);
+  addRoll(val);
+});
+
+function addRoll(val) {
+  rolls.push(val);
+  saveState();
+
+  const { frame, ballIdx, done } = getPosition(rolls);
+
+  // Toast for strike/spare
+  if (val === 10 && !(frame < 9 && ballIdx === 1)) {
+    showToast('⚡ STRIKE!', 'strike-toast');
+  } else {
+    const frames = parseFrames(rolls);
+    const prevFrame = frame > 0 || done ? frames[done ? 9 : frame - (ballIdx === 0 ? 1 : 0)] : null;
+    if (prevFrame && prevFrame.spare) showToast('/ SPARE!', 'spare-toast');
+  }
+
+  // Auto-save to history when done
+  if (isGameDone(rolls)) {
+    const scores = computeScores(rolls);
+    const finalScore = scores[9] || 0;
+    saveHistory(rolls, finalScore);
+  }
+
+  render();
+}
+
+document.getElementById('undoBtn').addEventListener('click', () => {
+  if (rolls.length === 0) return;
+  rolls.pop();
+  saveState();
+  render();
+  showToast('Undone', '');
+});
+
+document.getElementById('newGameBtn').addEventListener('click', () => {
+  if (rolls.length > 0 && !isGameDone(rolls)) {
+    if (!confirm('Start a new game? Current game will be abandoned.')) return;
+  }
+  rolls = [];
+  saveState();
+  render();
+});
+
+// History
+document.getElementById('historyBtn').addEventListener('click', () => {
+  renderHistory();
+  document.getElementById('historyOverlay').classList.add('open');
+});
+document.getElementById('closeHistory').addEventListener('click', () => {
+  document.getElementById('historyOverlay').classList.remove('open');
+});
+document.getElementById('historyOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('historyOverlay'))
+    document.getElementById('historyOverlay').classList.remove('open');
+});
+
+// About
+document.getElementById('aboutBtn').addEventListener('click', () => {
+  document.getElementById('aboutOverlay').classList.add('open');
+});
+document.getElementById('closeAbout').addEventListener('click', () => {
+  document.getElementById('aboutOverlay').classList.remove('open');
+});
+document.getElementById('aboutOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('aboutOverlay'))
+    document.getElementById('aboutOverlay').classList.remove('open');
+});
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (sessions.length === 0) {
+    list.innerHTML = '<div class="history-empty">No games yet.<br>Play one to see it here.</div>';
+    return;
+  }
+  list.innerHTML = sessions.map((s, idx) => {
+    const date = new Date(s.date);
+    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const frames = parseFrames(s.rolls);
+    const strikes = frames.filter(f => f.strike).length;
+    const spares = frames.filter(f => f.spare).length;
+    return `
+      <div class="history-item">
+        <div class="history-left">
+          <div class="history-date">${dateStr} · ${timeStr}</div>
+          <div class="history-frames">⚡${strikes} strikes · /${spares} spares</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <div class="history-score ${s.score === 300 ? 'perfect' : ''}">${s.score}</div>
+          <button class="delete-btn" data-idx="${idx}">🗑</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  list.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const i = parseInt(btn.dataset.idx);
+      sessions.splice(i, 1);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(sessions));
+      renderHistory();
+    });
+  });
+}
+
+// ── Toast ──
+let toastTimer;
+function showToast(msg, cls) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + cls + ' show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ── Share ──
+document.getElementById('shareBtn').addEventListener('click', () => {
+  renderShareCard();
+  document.getElementById('shareOverlay').classList.add('open');
+});
+document.getElementById('closeShare').addEventListener('click', () => {
+  document.getElementById('shareOverlay').classList.remove('open');
+});
+document.getElementById('shareOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('shareOverlay'))
+    document.getElementById('shareOverlay').classList.remove('open');
+});
+
+function renderShareCard() {
+  const frames = parseFrames(rolls);
+  const scores = computeScores(rolls);
+  const total = scores.filter(s => s !== null).slice(-1)[0] || 0;
+  const strikes = frames.filter(f => f.strike).length;
+  const spares  = frames.filter(f => f.spare).length;
+  const done    = isGameDone(rolls);
+
+  document.getElementById('shareScore').textContent = total;
+  document.getElementById('shareScore').style.color = total === 300 ? 'var(--strike)' : 'var(--accent)';
+  document.getElementById('shareFrames').textContent =
+    `⚡ ${strikes} strikes  /  ${spares} spares  ·  ${done ? 'Final' : 'In progress'}`;
+
+  // Mini frame grid in share card
+  const grid = document.getElementById('shareGrid');
+  grid.innerHTML = frames.map((f, i) => {
+    let icon = '·';
+    if (f.strike) icon = '⚡';
+    else if (f.spare) icon = '/';
+    else if (f.complete) icon = f.balls.reduce((a,b)=>a+b,0);
+    const col = f.strike ? 'var(--strike)' : f.spare ? 'var(--spare)' : f.complete ? 'var(--text)' : 'var(--border)';
+    return `<div style="font-family:'DM Mono',monospace;font-size:11px;color:${col};
+      background:var(--surface);border:1px solid var(--border);border-radius:6px;
+      padding:4px 6px;text-align:center;min-width:26px;">${i+1}<br><b>${icon}</b></div>`;
+  }).join('');
+}
+
+function buildShareText() {
+  const frames = parseFrames(rolls);
+  const scores = computeScores(rolls);
+  const total  = scores.filter(s => s !== null).slice(-1)[0] || 0;
+  const strikes= frames.filter(f => f.strike).length;
+  const spares = frames.filter(f => f.spare).length;
+  const done   = isGameDone(rolls);
+
+  const row = frames.map(f => {
+    if (f.strike) return 'X ';
+    if (f.spare)  return `${f.balls[0]}/ `;
+    if (f.complete) return f.balls.join('');
+    return '·';
+  }).join(' ');
+
+  return `🎱 Bowliards — ${done ? 'Final' : 'In Progress'}\n` +
+    `Score: ${total}${total===300?' 🏆':''}\n` +
+    `⚡ ${strikes} strikes  / ${spares} spares\n\n` +
+    `Frames: ${row}\n\n` +
+    `haivtv.com/bowliards`;
+}
+
+document.getElementById('copyShareBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(buildShareText()).then(() => {
+    showToast('Copied!', '');
+    document.getElementById('shareOverlay').classList.remove('open');
+  }).catch(() => showToast('Copy failed', ''));
+});
+
+document.getElementById('nativeShareBtn').addEventListener('click', () => {
+  const text = buildShareText();
+  if (navigator.share) {
+    navigator.share({ title: 'Bowliards Score', text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Copied!', '');
+      document.getElementById('shareOverlay').classList.remove('open');
+    });
+  }
+});
+
+// ── PWA Service Worker ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+// ── Init ──
+loadState();
+render();
+</script>
+</body>
+</html>
