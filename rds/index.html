@@ -355,6 +355,65 @@
     }
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+    .celebration {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(3, 13, 10, .56);
+      opacity: 0;
+      pointer-events: none;
+      backdrop-filter: blur(0);
+      transition: opacity .18s ease, backdrop-filter .18s ease;
+    }
+
+    .celebration.show {
+      opacity: 1;
+      backdrop-filter: blur(7px);
+    }
+
+    .celebration-card {
+      width: min(100%, 360px);
+      padding: 30px 24px 28px;
+      border: 1px solid rgba(200, 242, 99, .75);
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 50% -20%, rgba(200, 242, 99, .32), transparent 11rem),
+        linear-gradient(145deg, #173a2f, #0b211a);
+      box-shadow: var(--shadow);
+      text-align: center;
+      transform: translateY(16px) scale(.92);
+      transition: transform .22s cubic-bezier(.18, 1.24, .32, 1);
+    }
+
+    .celebration.show .celebration-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .celebration-emoji {
+      display: block;
+      margin-bottom: 12px;
+      font-size: 64px;
+      line-height: 1;
+      filter: drop-shadow(0 8px 22px rgba(200, 242, 99, .2));
+    }
+
+    .celebration h3 {
+      margin: 0;
+      color: var(--lime);
+      font-size: 34px;
+      line-height: .95;
+      letter-spacing: -.06em;
+    }
+
+    .celebration p {
+      margin: 10px 0 0;
+      color: #cfe3da;
+      font-weight: 750;
+    }
+
     @media (min-width: 620px) {
       .shell { padding-left: 24px; padding-right: 24px; }
       .hero { padding: 34px; }
@@ -493,6 +552,13 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="celebration" id="celebration" aria-live="polite" aria-hidden="true">
+    <div class="celebration-card">
+      <span class="celebration-emoji" id="celebrationEmoji">🔥</span>
+      <h3 id="celebrationTitle">Rack cleared!</h3>
+      <p id="celebrationText">That one counts. Stay in stroke.</p>
+    </div>
+  </div>
 
   <script>
     const levels = [
@@ -528,6 +594,7 @@
     let practiceHistory = safeParse(localStorage.getItem(STORAGE.history), []);
     let scoreState = safeParse(localStorage.getItem(STORAGE.score), { entries: [] });
     let toastTimer;
+    let celebrationTimer;
 
     const $ = (selector) => document.querySelector(selector);
     const level = (number) => levels[number - 1];
@@ -543,6 +610,20 @@
       toast.classList.add("show");
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function showCelebration({ title = "Rack cleared!", text = "That one counts. Stay in stroke.", emoji = "🔥" } = {}) {
+      const panel = $("#celebration");
+      $("#celebrationEmoji").textContent = emoji;
+      $("#celebrationTitle").textContent = title;
+      $("#celebrationText").textContent = text;
+      panel.setAttribute("aria-hidden", "false");
+      panel.classList.add("show");
+      clearTimeout(celebrationTimer);
+      celebrationTimer = setTimeout(() => {
+        panel.classList.remove("show");
+        panel.setAttribute("aria-hidden", "true");
+      }, 1500);
     }
 
     function renderLevelCard(prefix, item) {
@@ -622,8 +703,21 @@
 
     function addRack(cleared) {
       if (practice.racks.length >= 3) return;
+      const previousLevel = practice.level;
       practice.racks.push(cleared);
       resolvePracticeResult();
+      if (cleared) {
+        const leveledUp = practice.result && practice.result.next > previousLevel;
+        showCelebration(leveledUp ? {
+          title: "Level up!",
+          text: `Two racks down. Next: Level ${practice.result.next}.`,
+          emoji: "🏆"
+        } : {
+          title: "Rack cleared!",
+          text: `${practice.racks.filter(Boolean).length} clear${practice.racks.filter(Boolean).length === 1 ? "" : "s"} on this set.`,
+          emoji: "🔥"
+        });
+      }
       save();
       renderPractice();
     }
