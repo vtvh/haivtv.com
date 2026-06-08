@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071c17">
+  <meta name="description" content="Runout Drill System practice tracker with all 16 RDS levels and RDS 100 scoring.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>RDS — Runout Drill System</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #06130f;
+      --surface: #0b211a;
+      --surface-2: #102d24;
+      --line: #1c493b;
+      --ink: #eefbf4;
+      --muted: #8eb3a6;
+      --lime: #c8f263;
+      --lime-dark: #18361d;
+      --gold: #f2c45e;
+      --red: #ff786d;
+      --blue: #69cce8;
+      --shadow: 0 18px 60px rgba(0, 0, 0, .28);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--bg); scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background:
+        radial-gradient(circle at 85% -10%, rgba(200, 242, 99, .14), transparent 33rem),
+        linear-gradient(180deg, #071c17 0, var(--bg) 34rem);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button, select, input { font: inherit; }
+    button { touch-action: manipulation; }
+    a { color: var(--lime); }
+
+    .shell {
+      width: min(100%, 760px);
+      margin: 0 auto;
+      padding: env(safe-area-inset-top) 16px calc(92px + env(safe-area-inset-bottom));
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 76px;
+      gap: 16px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      color: #07130f;
+      background: var(--lime);
+      box-shadow: inset 0 0 0 7px rgba(7, 28, 23, .12);
+      font-weight: 900;
+      letter-spacing: -.08em;
+    }
+
+    .brand h1 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+    .brand p { margin: 2px 0 0; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .13em; }
+
+    .icon-button {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(11, 33, 26, .8);
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(145deg, rgba(16, 45, 36, .96), rgba(8, 27, 21, .96));
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      right: -64px;
+      bottom: -90px;
+      border: 24px solid rgba(200, 242, 99, .07);
+      border-radius: 50%;
+    }
+
+    .eyebrow {
+      margin: 0 0 9px;
+      color: var(--lime);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .hero h2 {
+      max-width: 520px;
+      margin: 0;
+      font-size: clamp(30px, 8vw, 52px);
+      line-height: .98;
+      letter-spacing: -.055em;
+    }
+
+    .hero-copy { max-width: 540px; margin: 16px 0 0; color: var(--muted); line-height: 1.55; }
+
+    .tabs {
+      position: sticky;
+      top: 8px;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      margin: 18px 0;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: rgba(6, 19, 15, .88);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+      backdrop-filter: blur(16px);
+    }
+
+    .tab {
+      min-height: 44px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .tab.active { background: var(--lime); color: #0a1812; }
+    .view { display: none; }
+    .view.active { display: block; animation: rise .22s ease-out; }
+    @keyframes rise { from { opacity: 0; transform: translateY(5px); } }
+
+    .card {
+      margin-bottom: 14px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(11, 33, 26, .88);
+    }
+
+    .level-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; }
+    .level-number {
+      display: grid;
+      place-items: center;
+      width: 56px;
+      height: 56px;
+      flex: 0 0 auto;
+      border-radius: 18px;
+      background: var(--lime);
+      color: #08170f;
+      font-size: 25px;
+      font-weight: 900;
+    }
+
+    .level-title { margin: 0; font-size: 22px; letter-spacing: -.035em; }
+    .rating { margin: 5px 0 0; color: var(--gold); font-size: 13px; font-weight: 800; }
+    .rule { margin: 18px 0 0; color: #c9ded6; line-height: 1.55; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; }
+    .chip {
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #081c16;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .02em;
+    }
+
+    .progress-label { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 12px; }
+    .rack-dots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin: 12px 0 18px; }
+    .rack-dot {
+      display: grid;
+      place-items: center;
+      min-height: 54px;
+      border: 1px dashed var(--line);
+      border-radius: 15px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .rack-dot.clear { border-style: solid; border-color: #5b8f43; background: #18351d; color: var(--lime); }
+    .rack-dot.fail { border-style: solid; border-color: #743d38; background: #331c19; color: #ffaaa3; }
+
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .button {
+      min-height: 54px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface-2);
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 850;
+    }
+    .button:active { transform: scale(.985); }
+    .button.primary { border-color: var(--lime); background: var(--lime); color: #07130f; }
+    .button.danger { border-color: #733b36; background: #2d1917; color: #ffaba4; }
+    .button.small { min-height: 42px; padding: 0 14px; font-size: 13px; }
+    .button:disabled { cursor: not-allowed; opacity: .4; }
+
+    .toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin: 12px 0 0; }
+    .select-wrap { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 12px; }
+    select {
+      min-height: 42px;
+      padding: 0 34px 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface-2);
+      color: var(--ink);
+    }
+
+    .result {
+      display: none;
+      margin-bottom: 14px;
+      padding: 22px;
+      border: 1px solid var(--lime);
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(200, 242, 99, .14), rgba(11, 33, 26, .96));
+    }
+    .result.show { display: block; }
+    .result h3 { margin: 0; font-size: 25px; }
+    .result p { margin: 8px 0 18px; color: var(--muted); line-height: 1.5; }
+
+    .section-title { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 26px 2px 12px; }
+    .section-title h3 { margin: 0; font-size: 19px; }
+    .section-title p { margin: 0; color: var(--muted); font-size: 12px; }
+
+    .history-list { display: grid; gap: 8px; }
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 15px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(11, 33, 26, .72);
+    }
+    .history-item strong { display: block; font-size: 14px; }
+    .history-item span { color: var(--muted); font-size: 11px; }
+    .history-badge { color: var(--lime) !important; font-weight: 850; white-space: nowrap; }
+    .empty { padding: 24px; color: var(--muted); text-align: center; border: 1px dashed var(--line); border-radius: 15px; }
+
+    .scoreboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .score-cell {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 19px;
+      background: var(--surface);
+    }
+    .score-cell span { display: block; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .score-cell strong { display: block; margin-top: 3px; color: var(--lime); font-size: 40px; letter-spacing: -.05em; }
+
+    .penalty-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; }
+    .penalty {
+      min-height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--surface-2);
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 850;
+    }
+    .penalty.selected { border-color: var(--lime); background: var(--lime-dark); color: var(--lime); }
+
+    .level-list { display: grid; gap: 10px; }
+    .level-row {
+      width: 100%;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      overflow: hidden;
+      background: rgba(11, 33, 26, .82);
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+    }
+    .level-row-main { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; padding: 14px; }
+    .mini-number { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: var(--surface-2); color: var(--lime); font-weight: 900; }
+    .level-row h4 { margin: 0; font-size: 14px; }
+    .level-row small { display: block; margin-top: 3px; color: var(--muted); }
+    .chevron { color: var(--muted); transition: transform .2s; }
+    .level-row.open .chevron { transform: rotate(180deg); }
+    .level-detail { display: none; padding: 0 16px 16px 70px; color: #bfd4cc; font-size: 13px; line-height: 1.55; }
+    .level-row.open .level-detail { display: block; }
+
+    dialog {
+      width: min(calc(100% - 28px), 560px);
+      max-height: 82vh;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: var(--shadow);
+    }
+    dialog::backdrop { background: rgba(0, 0, 0, .68); backdrop-filter: blur(5px); }
+    .modal-head { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid var(--line); background: var(--surface); }
+    .modal-head h3 { margin: 0; }
+    .modal-body { padding: 20px; color: #c5d9d1; line-height: 1.58; }
+    .modal-body h4 { margin: 22px 0 8px; color: var(--ink); }
+    .modal-body h4:first-child { margin-top: 0; }
+    .modal-body ol, .modal-body ul { padding-left: 20px; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(22px + env(safe-area-inset-bottom));
+      z-index: 100;
+      max-width: calc(100% - 32px);
+      padding: 12px 17px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #14382d;
+      color: var(--ink);
+      box-shadow: var(--shadow);
+      font-size: 13px;
+      font-weight: 750;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 12px);
+      transition: .2s ease;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (min-width: 620px) {
+      .shell { padding-left: 24px; padding-right: 24px; }
+      .hero { padding: 34px; }
+      .level-list { grid-template-columns: 1fr 1fr; }
+      .level-row.open { grid-column: 1 / -1; }
+      .penalty-grid { grid-template-columns: repeat(8, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <div class="brand-mark">R</div>
+        <div>
+          <h1>Runout Drill System</h1>
+          <p>Practice · progress · run out</p>
+        </div>
+      </div>
+      <button class="icon-button" id="aboutButton" aria-label="About RDS">?</button>
+    </header>
+
+    <section class="hero">
+      <p class="eyebrow">16 levels · every player</p>
+      <h2>Find the edge of your game.</h2>
+      <p class="hero-copy">Rack, break, take ball in hand, and run out. Clear two of three racks to move up; let the drill adapt when the table wins.</p>
+    </section>
+
+    <nav class="tabs" aria-label="App sections">
+      <button class="tab active" data-view="practice">Practice</button>
+      <button class="tab" data-view="score">RDS 100</button>
+      <button class="tab" data-view="levels">Levels</button>
+    </nav>
+
+    <main>
+      <section class="view active" id="practiceView">
+        <div class="result" id="practiceResult"></div>
+
+        <article class="card" id="practiceCard">
+          <div class="level-head">
+            <div>
+              <p class="eyebrow" id="practiceEyebrow">Current challenge</p>
+              <h3 class="level-title" id="practiceTitle"></h3>
+              <p class="rating" id="practiceRating"></p>
+            </div>
+            <div class="level-number" id="practiceLevel"></div>
+          </div>
+          <p class="rule" id="practiceRule"></p>
+          <div class="chips" id="practiceChips"></div>
+        </article>
+
+        <article class="card">
+          <div class="progress-label">
+            <span>Best of three racks</span>
+            <strong id="rackCount">Rack 1 of 3</strong>
+          </div>
+          <div class="rack-dots" id="rackDots"></div>
+          <div class="actions">
+            <button class="button primary" id="clearRack">Cleared rack</button>
+            <button class="button danger" id="failedRack">Miss / foul</button>
+          </div>
+          <div class="toolbar">
+            <div class="select-wrap">
+              <label for="startLevel">Level</label>
+              <select id="startLevel" aria-label="Set current practice level"></select>
+            </div>
+            <button class="button small" id="undoPractice">Undo last rack</button>
+          </div>
+        </article>
+
+        <div class="section-title">
+          <h3>Recent sessions</h3>
+          <p>Stored on this device</p>
+        </div>
+        <div class="history-list" id="practiceHistory"></div>
+      </section>
+
+      <section class="view" id="scoreView">
+        <div class="scoreboard">
+          <div class="score-cell"><span>Current score</span><strong id="rdsScore">100</strong></div>
+          <div class="score-cell"><span>Level estimate</span><strong id="rdsEstimate">—</strong></div>
+        </div>
+
+        <article class="card" id="scoreCard">
+          <div class="level-head">
+            <div>
+              <p class="eyebrow">RDS 100 · one rack per level</p>
+              <h3 class="level-title" id="scoreTitle"></h3>
+              <p class="rating" id="scoreProgress"></p>
+            </div>
+            <div class="level-number" id="scoreLevel"></div>
+          </div>
+          <p class="rule" id="scoreRule"></p>
+          <p class="rule"><strong>How many required balls were left?</strong> Choose 0 for a clear.</p>
+          <div class="penalty-grid" id="penaltyGrid"></div>
+          <div class="toolbar">
+            <button class="button small" id="undoScore">Undo level</button>
+            <button class="button small danger" id="resetScore">Reset RDS 100</button>
+          </div>
+        </article>
+
+        <div class="section-title"><h3>Scorecard</h3><p>Level 1 is optional and skipped</p></div>
+        <div class="history-list" id="scoreHistory"></div>
+      </section>
+
+      <section class="view" id="levelsView">
+        <div class="section-title">
+          <h3>All 16 challenges</h3>
+          <p>Tap a level for setup details</p>
+        </div>
+        <div class="level-list" id="levelList"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="aboutDialog">
+    <div class="modal-head">
+      <h3>How RDS works</h3>
+      <button class="icon-button" id="closeAbout" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <h4>Progressive practice</h4>
+      <ol>
+        <li>Break the rack for your current level.</li>
+        <li>Take cue ball in hand after the break unless the level says otherwise.</li>
+        <li>Record whether you completed the required run without a miss or foul.</li>
+        <li>After three racks: move up for 2–3 clears, stay for 1, or move down for 0.</li>
+      </ol>
+      <h4>RDS 100</h4>
+      <p>Start at 100, skip optional Level 1, and play one rack at Levels 2–16. After a miss or foul, subtract the required balls left on the table. Rotation portions use rotation rules; other levels are call pocket.</p>
+      <h4>Credits and source</h4>
+      <p>RDS was developed by Dr. Dave Alciatore and Bob Jewett. This tracker is an independent practice aid based on Dr. Dave's October 2020 article and current detailed rules.</p>
+      <p><a href="https://drdavepoolinfo.com/bd_articles/2020/oct20.pdf" target="_blank" rel="noopener">Read the original article (PDF)</a><br>
+      <a href="https://drdavepoolinfo.com/faq/drill/rds/" target="_blank" rel="noopener">Read the detailed RDS rules</a></p>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const levels = [
+      { n: 1, balls: 6, title: "Direct pocketing, no cue ball", rating: "Lower novice", game: "Pocketing", bih: "No cue ball", rule: "Break six balls, remove the cue ball, then pocket every object ball directly in any order. Mark each completed ball with chalk and wipe the marks off afterward." },
+      { n: 2, balls: 6, title: "Any order, BIH every shot", rating: "Mid novice", game: "Any order", bih: "BIH every shot", rule: "Break six balls. Place the cue ball for every shot and pocket all six object balls in any order." },
+      { n: 3, balls: 6, title: "Any order, 3 extra BIHs", rating: "Upper novice", game: "Any order", bih: "3 extra BIHs", rule: "Break six balls. Take ball in hand after the break and up to three additional times during the run. Pocket all balls in any order." },
+      { n: 4, balls: 6, title: "Any order, 2 extra BIHs", rating: "Lower beginner · D−", game: "Any order", bih: "2 extra BIHs", rule: "Break six balls. Take ball in hand after the break and up to two additional times during the run. Pocket all balls in any order." },
+      { n: 5, balls: 6, title: "Any order, 1 extra BIH", rating: "Mid beginner · D", game: "Any order", bih: "1 extra BIH", rule: "Break six balls. Take ball in hand after the break and one additional time during the run. Pocket all balls in any order." },
+      { n: 6, balls: 7, title: "Mini 8-ball, 1 extra BIH", rating: "Upper beginner · D+", game: "8-ball", bih: "1 extra BIH", rule: "Rack three solids, three stripes, and the 8. Play 8-ball rules with ball in hand after the break and one extra BIH. Clear one group, then the 8." },
+      { n: 7, balls: 9, title: "Any order, 1 extra BIH", rating: "Lower intermediate · C−", game: "Any order", bih: "1 extra BIH", rule: "Break nine balls. Take ball in hand after the break and one additional time during the run. Pocket all balls in any order." },
+      { n: 8, balls: 9, title: "Mini 8-ball, 1 extra BIH", rating: "Mid intermediate · C", game: "8-ball", bih: "1 extra BIH", rule: "Rack four solids, four stripes, and the 8 in the center. Play 8-ball rules with ball in hand after the break and one extra BIH. Clear one group, then the 8." },
+      { n: 9, balls: 15, title: "Any order, 2 extra BIHs", rating: "Upper intermediate · C+", game: "Any order", bih: "2 extra BIHs", rule: "Break a full rack. Take ball in hand after the break and up to two additional times during the run. Pocket all 15 balls in any order." },
+      { n: 10, balls: 6, title: "Six balls in rotation", rating: "Lower advanced · B−", game: "Rotation", bih: "After break", rule: "Break six balls, take ball in hand, and run them in rotation. Always contact the lowest-numbered ball first." },
+      { n: 11, balls: 15, title: "Full rack, any order", rating: "Mid advanced · B", game: "Any order", bih: "After break", rule: "Break a full rack, take ball in hand after the break, and pocket all 15 balls in any order." },
+      { n: 12, balls: 15, title: "Full-rack 8-ball", rating: "Upper advanced · B+", game: "8-ball", bih: "After break", rule: "Break a standard 15-ball rack and take ball in hand. Play standard 8-ball rules: clear one group, then legally pocket the 8." },
+      { n: 13, balls: 9, title: "Mini 8-ball, then rotation", rating: "Lower shortstop · A−", game: "8-ball + rotation", bih: "After break", rule: "Rack four solids, four stripes, and the 8. Clear one group and the 8 under 8-ball rules, then pocket every remaining ball in rotation." },
+      { n: 14, balls: 9, title: "Standard 9-ball", rating: "Upper shortstop · A", game: "9-ball", bih: "After break", rule: "Rack and play standard 9-ball with ball in hand after the break. A legally pocketed 9 at any time completes the rack." },
+      { n: 15, balls: 15, title: "8-ball, then rotation", rating: "Semipro / pro · A+ / AA", game: "8-ball + rotation", bih: "After break", rule: "Play full-rack 8-ball with ball in hand after the break. After clearing your group and the 8, run every remaining ball in rotation." },
+      { n: 16, balls: 15, title: "Full-rack rotation", rating: "World-class pro · A++ / AAA", game: "Rotation", bih: "After break", rule: "Break a full rack, take ball in hand, and run all 15 balls in rotation, always contacting the lowest-numbered ball first." }
+    ];
+
+    const STORAGE = {
+      practice: "rds-practice-v1",
+      history: "rds-history-v1",
+      score: "rds-100-v1"
+    };
+
+    const safeParse = (value, fallback) => {
+      try { return value ? JSON.parse(value) : fallback; } catch { return fallback; }
+    };
+
+    let practice = safeParse(localStorage.getItem(STORAGE.practice), { level: 4, racks: [], result: null });
+    let practiceHistory = safeParse(localStorage.getItem(STORAGE.history), []);
+    let scoreState = safeParse(localStorage.getItem(STORAGE.score), { entries: [] });
+    let toastTimer;
+
+    const $ = (selector) => document.querySelector(selector);
+    const level = (number) => levels[number - 1];
+    const save = () => {
+      localStorage.setItem(STORAGE.practice, JSON.stringify(practice));
+      localStorage.setItem(STORAGE.history, JSON.stringify(practiceHistory));
+      localStorage.setItem(STORAGE.score, JSON.stringify(scoreState));
+    };
+
+    function showToast(message) {
+      const toast = $("#toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function renderLevelCard(prefix, item) {
+      $(`#${prefix}Level`).textContent = item.n;
+      $(`#${prefix}Title`).textContent = item.title;
+      if ($(`#${prefix}Rating`)) $(`#${prefix}Rating`).textContent = item.rating;
+      $(`#${prefix}Rule`).textContent = item.rule;
+      if ($(`#${prefix}Chips`)) {
+        $(`#${prefix}Chips`).innerHTML = [
+          `${item.balls} balls`,
+          item.game,
+          item.bih
+        ].map(text => `<span class="chip">${text}</span>`).join("");
+      }
+    }
+
+    function renderPractice() {
+      const item = level(practice.level);
+      renderLevelCard("practice", item);
+      $("#startLevel").value = practice.level;
+      $("#rackCount").textContent = practice.racks.length < 3 ? `Rack ${practice.racks.length + 1} of 3` : "Set complete";
+      $("#rackDots").innerHTML = [0, 1, 2].map(index => {
+        const value = practice.racks[index];
+        const cls = value === true ? "clear" : value === false ? "fail" : "";
+        const text = value === true ? "Clear" : value === false ? "Miss / foul" : `Rack ${index + 1}`;
+        return `<div class="rack-dot ${cls}">${text}</div>`;
+      }).join("");
+
+      const complete = practice.racks.length === 3;
+      $("#clearRack").disabled = complete;
+      $("#failedRack").disabled = complete;
+      $("#undoPractice").disabled = practice.racks.length === 0;
+
+      const result = $("#practiceResult");
+      if (practice.result) {
+        const direction = practice.result.next > practice.result.from ? "Move up" :
+          practice.result.next < practice.result.from ? "Move down" : "Stay here";
+        result.classList.add("show");
+        result.innerHTML = `
+          <p class="eyebrow">${practice.result.clears} of 3 racks cleared</p>
+          <h3>${direction}: Level ${practice.result.next}</h3>
+          <p>${level(practice.result.next).title}</p>
+          <button class="button primary" id="nextSet">Start next set</button>`;
+        $("#nextSet").addEventListener("click", startNextSet);
+      } else {
+        result.classList.remove("show");
+        result.innerHTML = "";
+      }
+
+      renderPracticeHistory();
+    }
+
+    function addRack(cleared) {
+      if (practice.racks.length >= 3) return;
+      practice.racks.push(cleared);
+      if (practice.racks.length === 3) {
+        const clears = practice.racks.filter(Boolean).length;
+        let next = practice.level;
+        if (clears >= 2) next = Math.min(16, next + 1);
+        if (clears === 0) next = Math.max(1, next - 1);
+        practice.result = { from: practice.level, next, clears };
+        practiceHistory.unshift({
+          date: new Date().toISOString(),
+          level: practice.level,
+          next,
+          clears
+        });
+        practiceHistory = practiceHistory.slice(0, 12);
+      }
+      save();
+      renderPractice();
+    }
+
+    function startNextSet() {
+      practice = { level: practice.result.next, racks: [], result: null };
+      save();
+      renderPractice();
+      window.scrollTo({ top: $(".tabs").offsetTop - 8, behavior: "smooth" });
+    }
+
+    function renderPracticeHistory() {
+      const container = $("#practiceHistory");
+      if (!practiceHistory.length) {
+        container.innerHTML = `<div class="empty">Complete a three-rack set to start your history.</div>`;
+        return;
+      }
+      container.innerHTML = practiceHistory.map(entry => {
+        const date = new Date(entry.date).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+        const move = entry.next > entry.level ? `↑ Level ${entry.next}` : entry.next < entry.level ? `↓ Level ${entry.next}` : "Hold";
+        return `<div class="history-item">
+          <div><strong>Level ${entry.level} · ${entry.clears}/3 clears</strong><span>${date} · ${level(entry.level).rating}</span></div>
+          <span class="history-badge">${move}</span>
+        </div>`;
+      }).join("");
+    }
+
+    function scoreEstimate(score) {
+      if (score >= 95) return 16;
+      if (score >= 90) return 15;
+      if (score >= 85) return 14;
+      if (score >= 80) return 13;
+      if (score >= 75) return 12;
+      if (score >= 70) return 11;
+      if (score >= 60) return 10;
+      if (score >= 50) return 9;
+      if (score >= 40) return 8;
+      if (score >= 30) return 7;
+      if (score >= 20) return 6;
+      if (score >= 10) return 5;
+      if (score >= 0) return 4;
+      return 3;
+    }
+
+    function currentScore() {
+      return 100 - scoreState.entries.reduce((total, entry) => total + entry.left, 0);
+    }
+
+    function renderScore() {
+      const index = scoreState.entries.length;
+      const nextLevel = index + 2;
+      const score = currentScore();
+      $("#rdsScore").textContent = score;
+      $("#rdsEstimate").textContent = index ? scoreEstimate(score) : "—";
+
+      if (nextLevel <= 16) {
+        const item = level(nextLevel);
+        renderLevelCard("score", item);
+        $("#scoreProgress").textContent = `Rack ${index + 1} of 15 · ${item.rating}`;
+        $("#penaltyGrid").innerHTML = Array.from({ length: item.balls + 1 }, (_, left) =>
+          `<button class="penalty" data-left="${left}" aria-label="${left} balls left">${left}</button>`
+        ).join("");
+        $("#penaltyGrid").querySelectorAll(".penalty").forEach(button => {
+          button.addEventListener("click", () => addScoreEntry(Number(button.dataset.left)));
+        });
+      } else {
+        $("#scoreLevel").textContent = "✓";
+        $("#scoreTitle").textContent = "RDS 100 complete";
+        $("#scoreProgress").textContent = `Estimated RDS Level ${scoreEstimate(score)}`;
+        $("#scoreRule").textContent = `Final score: ${score}. Your scorecard remains stored on this device until you reset it.`;
+        $("#penaltyGrid").innerHTML = "";
+      }
+
+      $("#undoScore").disabled = !scoreState.entries.length;
+      renderScoreHistory();
+    }
+
+    function addScoreEntry(left) {
+      const number = scoreState.entries.length + 2;
+      if (number > 16) return;
+      scoreState.entries.push({ level: number, left });
+      save();
+      renderScore();
+      showToast(left === 0 ? `Level ${number} cleared` : `−${left} points`);
+    }
+
+    function renderScoreHistory() {
+      const container = $("#scoreHistory");
+      if (!scoreState.entries.length) {
+        container.innerHTML = `<div class="empty">Begin at Level 2. Tap the number of required balls left after the rack ends.</div>`;
+        return;
+      }
+      container.innerHTML = scoreState.entries.slice().reverse().map(entry => `
+        <div class="history-item">
+          <div><strong>Level ${entry.level} · ${level(entry.level).title}</strong><span>${level(entry.level).balls} balls in rack</span></div>
+          <span class="history-badge">${entry.left ? `−${entry.left}` : "Clear"}</span>
+        </div>`).join("");
+    }
+
+    function renderLevels() {
+      $("#levelList").innerHTML = levels.map(item => `
+        <button class="level-row" aria-expanded="false">
+          <span class="level-row-main">
+            <span class="mini-number">${item.n}</span>
+            <span><h4>${item.title}</h4><small>${item.rating} · ${item.balls} balls</small></span>
+            <span class="chevron">⌄</span>
+          </span>
+          <span class="level-detail">${item.rule}<span class="chips"><span class="chip">${item.game}</span><span class="chip">${item.bih}</span></span></span>
+        </button>`).join("");
+
+      $("#levelList").querySelectorAll(".level-row").forEach(row => {
+        row.addEventListener("click", () => {
+          const open = row.classList.toggle("open");
+          row.setAttribute("aria-expanded", open);
+        });
+      });
+    }
+
+    levels.forEach(item => {
+      $("#startLevel").insertAdjacentHTML("beforeend", `<option value="${item.n}">Level ${item.n} · ${item.rating}</option>`);
+    });
+
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(item => item.classList.toggle("active", item === tab));
+        document.querySelectorAll(".view").forEach(view => view.classList.remove("active"));
+        $(`#${tab.dataset.view}View`).classList.add("active");
+      });
+    });
+
+    $("#clearRack").addEventListener("click", () => addRack(true));
+    $("#failedRack").addEventListener("click", () => addRack(false));
+    $("#undoPractice").addEventListener("click", () => {
+      if (!practice.racks.length) return;
+      if (practice.result) {
+        practiceHistory.shift();
+        practice.result = null;
+      }
+      practice.racks.pop();
+      save();
+      renderPractice();
+      showToast("Last rack removed");
+    });
+    $("#startLevel").addEventListener("change", (event) => {
+      const next = Number(event.target.value);
+      if (practice.racks.length && !confirm("Change level and clear the current set?")) {
+        event.target.value = practice.level;
+        return;
+      }
+      practice = { level: next, racks: [], result: null };
+      save();
+      renderPractice();
+    });
+
+    $("#undoScore").addEventListener("click", () => {
+      if (!scoreState.entries.length) return;
+      scoreState.entries.pop();
+      save();
+      renderScore();
+      showToast("Last level removed");
+    });
+    $("#resetScore").addEventListener("click", () => {
+      if (scoreState.entries.length && !confirm("Reset the entire RDS 100 scorecard?")) return;
+      scoreState = { entries: [] };
+      save();
+      renderScore();
+    });
+
+    const aboutDialog = $("#aboutDialog");
+    $("#aboutButton").addEventListener("click", () => aboutDialog.showModal());
+    $("#closeAbout").addEventListener("click", () => aboutDialog.close());
+    aboutDialog.addEventListener("click", event => {
+      if (event.target === aboutDialog) aboutDialog.close();
+    });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+    }
+
+    renderPractice();
+    renderScore();
+    renderLevels();
+  </script>
+</body>
+</html>
