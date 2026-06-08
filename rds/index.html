@@ -498,20 +498,20 @@
     const levels = [
       { n: 1, balls: 6, title: "Direct pocketing, no cue ball", rating: "Lower novice", game: "Pocketing", bih: "No cue ball", rule: "Break six balls, remove the cue ball, then pocket every object ball directly in any order. Mark each completed ball with chalk and wipe the marks off afterward." },
       { n: 2, balls: 6, title: "Any order, BIH every shot", rating: "Mid novice", game: "Any order", bih: "BIH every shot", rule: "Break six balls. Place the cue ball for every shot and pocket all six object balls in any order." },
-      { n: 3, balls: 6, title: "Any order, 3 extra BIHs", rating: "Upper novice", game: "Any order", bih: "3 extra BIHs", rule: "Break six balls. Take ball in hand after the break and up to three additional times during the run. Pocket all balls in any order." },
-      { n: 4, balls: 6, title: "Any order, 2 extra BIHs", rating: "Lower beginner · D−", game: "Any order", bih: "2 extra BIHs", rule: "Break six balls. Take ball in hand after the break and up to two additional times during the run. Pocket all balls in any order." },
-      { n: 5, balls: 6, title: "Any order, 1 extra BIH", rating: "Mid beginner · D", game: "Any order", bih: "1 extra BIH", rule: "Break six balls. Take ball in hand after the break and one additional time during the run. Pocket all balls in any order." },
-      { n: 6, balls: 7, title: "Mini 8-ball, 1 extra BIH", rating: "Upper beginner · D+", game: "8-ball", bih: "1 extra BIH", rule: "Rack three solids, three stripes, and the 8. Play 8-ball rules with ball in hand after the break and one extra BIH. Clear one group, then the 8." },
-      { n: 7, balls: 9, title: "Any order, 1 extra BIH", rating: "Lower intermediate · C−", game: "Any order", bih: "1 extra BIH", rule: "Break nine balls. Take ball in hand after the break and one additional time during the run. Pocket all balls in any order." },
-      { n: 8, balls: 9, title: "Mini 8-ball, 1 extra BIH", rating: "Mid intermediate · C", game: "8-ball", bih: "1 extra BIH", rule: "Rack four solids, four stripes, and the 8 in the center. Play 8-ball rules with ball in hand after the break and one extra BIH. Clear one group, then the 8." },
-      { n: 9, balls: 15, title: "Any order, 2 extra BIHs", rating: "Upper intermediate · C+", game: "Any order", bih: "2 extra BIHs", rule: "Break a full rack. Take ball in hand after the break and up to two additional times during the run. Pocket all 15 balls in any order." },
-      { n: 10, balls: 6, title: "Six balls in rotation", rating: "Lower advanced · B−", game: "Rotation", bih: "After break", rule: "Break six balls, take ball in hand, and run them in rotation. Always contact the lowest-numbered ball first." },
-      { n: 11, balls: 15, title: "Full rack, any order", rating: "Mid advanced · B", game: "Any order", bih: "After break", rule: "Break a full rack, take ball in hand after the break, and pocket all 15 balls in any order." },
-      { n: 12, balls: 15, title: "Full-rack 8-ball", rating: "Upper advanced · B+", game: "8-ball", bih: "After break", rule: "Break a standard 15-ball rack and take ball in hand. Play standard 8-ball rules: clear one group, then legally pocket the 8." },
-      { n: 13, balls: 9, title: "Mini 8-ball, then rotation", rating: "Lower shortstop · A−", game: "8-ball + rotation", bih: "After break", rule: "Rack four solids, four stripes, and the 8. Clear one group and the 8 under 8-ball rules, then pocket every remaining ball in rotation." },
-      { n: 14, balls: 9, title: "Standard 9-ball", rating: "Upper shortstop · A", game: "9-ball", bih: "After break", rule: "Rack and play standard 9-ball with ball in hand after the break. A legally pocketed 9 at any time completes the rack." },
-      { n: 15, balls: 15, title: "8-ball, then rotation", rating: "Semipro / pro · A+ / AA", game: "8-ball + rotation", bih: "After break", rule: "Play full-rack 8-ball with ball in hand after the break. After clearing your group and the 8, run every remaining ball in rotation." },
-      { n: 16, balls: 15, title: "Full-rack rotation", rating: "World-class pro · A++ / AAA", game: "Rotation", bih: "After break", rule: "Break a full rack, take ball in hand, and run all 15 balls in rotation, always contacting the lowest-numbered ball first." }
+      { n: 3, balls: 6, title: "Any order, +3 BIHs", rating: "Upper novice", game: "Any order", bih: "+3 BIHs", rule: "Break six balls. Take ball in hand after the break and up to three additional times during the run. Pocket all balls in any order." },
+      { n: 4, balls: 6, title: "Any order, +2 BIHs", rating: "Lower beginner · D−", game: "Any order", bih: "+2 BIHs", rule: "Break six balls. Take ball in hand after the break and up to two additional times during the run. Pocket all balls in any order." },
+      { n: 5, balls: 6, title: "Any order, +1 BIH", rating: "Mid beginner · D", game: "Any order", bih: "+1 BIH", rule: "Break six balls. Take ball in hand after the break and one additional time during the run. Pocket all balls in any order." },
+      { n: 6, balls: 7, title: "Mini 8-ball, +1 BIH", rating: "Upper beginner · D+", game: "8-ball", bih: "+1 BIH", rule: "Rack three solids, three stripes, and the 8. Play 8-ball rules with ball in hand after the break and one extra BIH. Clear one group, then the 8." },
+      { n: 7, balls: 9, title: "Any order, +1 BIH", rating: "Lower intermediate · C−", game: "Any order", bih: "+1 BIH", rule: "Break nine balls. Take ball in hand after the break and one additional time during the run. Pocket all balls in any order." },
+      { n: 8, balls: 9, title: "Mini 8-ball, +1 BIH", rating: "Mid intermediate · C", game: "8-ball", bih: "+1 BIH", rule: "Rack four solids, four stripes, and the 8 in the center. Play 8-ball rules with ball in hand after the break and one extra BIH. Clear one group, then the 8." },
+      { n: 9, balls: 15, title: "Any order, +2 BIHs", rating: "Upper intermediate · C+", game: "Any order", bih: "+2 BIHs", rule: "Break a full rack. Take ball in hand after the break and up to two additional times during the run. Pocket all 15 balls in any order." },
+      { n: 10, balls: 6, title: "Six balls in rotation", rating: "Lower advanced · B−", game: "Rotation", bih: "+0 BIHs", rule: "Break six balls, take ball in hand, and run them in rotation. Always contact the lowest-numbered ball first." },
+      { n: 11, balls: 15, title: "Full rack, any order", rating: "Mid advanced · B", game: "Any order", bih: "+0 BIHs", rule: "Break a full rack, take ball in hand after the break, and pocket all 15 balls in any order." },
+      { n: 12, balls: 15, title: "Full-rack 8-ball", rating: "Upper advanced · B+", game: "8-ball", bih: "+0 BIHs", rule: "Break a standard 15-ball rack and take ball in hand. Play standard 8-ball rules: clear one group, then legally pocket the 8." },
+      { n: 13, balls: 9, title: "Mini 8-ball, then rotation", rating: "Lower shortstop · A−", game: "8-ball + rotation", bih: "+0 BIHs", rule: "Rack four solids, four stripes, and the 8. Clear one group and the 8 under 8-ball rules, then pocket every remaining ball in rotation." },
+      { n: 14, balls: 9, title: "Standard 9-ball", rating: "Upper shortstop · A", game: "9-ball", bih: "+0 BIHs", rule: "Rack and play standard 9-ball with ball in hand after the break. A legally pocketed 9 at any time completes the rack." },
+      { n: 15, balls: 15, title: "8-ball, then rotation", rating: "Semipro / pro · A+ / AA", game: "8-ball + rotation", bih: "+0 BIHs", rule: "Play full-rack 8-ball with ball in hand after the break. After clearing your group and the 8, run every remaining ball in rotation." },
+      { n: 16, balls: 15, title: "Full-rack rotation", rating: "World-class pro · A++ / AAA", game: "Rotation", bih: "+0 BIHs", rule: "Break a full rack, take ball in hand, and run all 15 balls in rotation, always contacting the lowest-numbered ball first." }
     ];
 
     const STORAGE = {
@@ -559,11 +559,35 @@
       }
     }
 
+    function resolvePracticeResult() {
+      if (practice.result) return false;
+      const clears = practice.racks.filter(Boolean).length;
+      const misses = practice.racks.length - clears;
+      const decisive = clears === 2 || misses === 2 || practice.racks.length === 3;
+      if (!decisive) return false;
+
+      let next = practice.level;
+      if (clears >= 2) next = Math.min(16, next + 1);
+      if (clears === 0) next = Math.max(1, next - 1);
+
+      practice.result = { from: practice.level, next, clears, total: practice.racks.length };
+      practiceHistory.unshift({
+        date: new Date().toISOString(),
+        level: practice.level,
+        next,
+        clears,
+        total: practice.racks.length
+      });
+      practiceHistory = practiceHistory.slice(0, 12);
+      return true;
+    }
+
     function renderPractice() {
+      if (resolvePracticeResult()) save();
       const item = level(practice.level);
       renderLevelCard("practice", item);
       $("#startLevel").value = practice.level;
-      $("#rackCount").textContent = practice.racks.length < 3 ? `Rack ${practice.racks.length + 1} of 3` : "Set complete";
+      $("#rackCount").textContent = practice.result ? "Set complete" : `Rack ${practice.racks.length + 1} of 3`;
       $("#rackDots").innerHTML = [0, 1, 2].map(index => {
         const value = practice.racks[index];
         const cls = value === true ? "clear" : value === false ? "fail" : "";
@@ -571,18 +595,19 @@
         return `<div class="rack-dot ${cls}">${text}</div>`;
       }).join("");
 
-      const complete = practice.racks.length === 3;
+      const complete = Boolean(practice.result);
       $("#clearRack").disabled = complete;
       $("#failedRack").disabled = complete;
       $("#undoPractice").disabled = practice.racks.length === 0;
 
       const result = $("#practiceResult");
       if (practice.result) {
+        const total = practice.result.total || practice.racks.length || 3;
         const direction = practice.result.next > practice.result.from ? "Move up" :
           practice.result.next < practice.result.from ? "Move down" : "Stay here";
         result.classList.add("show");
         result.innerHTML = `
-          <p class="eyebrow">${practice.result.clears} of 3 racks cleared</p>
+          <p class="eyebrow">${practice.result.clears} of ${total} racks cleared</p>
           <h3>${direction}: Level ${practice.result.next}</h3>
           <p>${level(practice.result.next).title}</p>
           <button class="button primary" id="nextSet">Start next set</button>`;
@@ -598,20 +623,7 @@
     function addRack(cleared) {
       if (practice.racks.length >= 3) return;
       practice.racks.push(cleared);
-      if (practice.racks.length === 3) {
-        const clears = practice.racks.filter(Boolean).length;
-        let next = practice.level;
-        if (clears >= 2) next = Math.min(16, next + 1);
-        if (clears === 0) next = Math.max(1, next - 1);
-        practice.result = { from: practice.level, next, clears };
-        practiceHistory.unshift({
-          date: new Date().toISOString(),
-          level: practice.level,
-          next,
-          clears
-        });
-        practiceHistory = practiceHistory.slice(0, 12);
-      }
+      resolvePracticeResult();
       save();
       renderPractice();
     }
@@ -632,8 +644,9 @@
       container.innerHTML = practiceHistory.map(entry => {
         const date = new Date(entry.date).toLocaleDateString(undefined, { month: "short", day: "numeric" });
         const move = entry.next > entry.level ? `↑ Level ${entry.next}` : entry.next < entry.level ? `↓ Level ${entry.next}` : "Hold";
+        const total = entry.total || 3;
         return `<div class="history-item">
-          <div><strong>Level ${entry.level} · ${entry.clears}/3 clears</strong><span>${date} · ${level(entry.level).rating}</span></div>
+          <div><strong>Level ${entry.level} · ${entry.clears}/${total} clears</strong><span>${date} · ${level(entry.level).rating}</span></div>
           <span class="history-badge">${move}</span>
         </div>`;
       }).join("");
